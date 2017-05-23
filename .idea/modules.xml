@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PullToZoomView.iml" filepath="$PROJECT_DIR$/PullToZoomView.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PullToZoomView_mine.iml" filepath="$PROJECT_DIR$/PullToZoomView_mine.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
