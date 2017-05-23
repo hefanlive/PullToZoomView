@@ -1,7 +1,7 @@
 # PullToZoomView
 
-####此View是一个自定义框架View。HeadView可展示头部信息，ZoomView实现下拉缩放，
-####ContentView包含Tab和ViewPager，两者结合实现多页面的流畅切换。
+此View是一个自定义框架View。HeadView可展示头部信息，ZoomView实现下拉缩放，
+ContentView包含Tab和ViewPager，两者结合实现多页面的流畅切换。
 
 依赖方式：
 
