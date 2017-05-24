@@ -193,18 +193,18 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
                     final float y = event.getY(), x = event.getX();
                     final float diff, absDiff;
 
-                    if (mHeaderHeight <= actionBarHeight){
-                        if (mOnPullScrollListener == null){
+                    if (mHeaderHeight <= actionBarHeight) {
+                        if (mOnPullScrollListener == null) {
                             throw new NullPointerException("mOnPullScrollListener must not be null!");
                         }
                         if (!mOnPullScrollListener.isOnTopEdge()
-                                || y < mInitialMotionY){//如果列表没有在最顶端,或者是上滑的就不拦截了
+                                || y < mInitialMotionY) {//如果列表没有在最顶端,或者是上滑的就不拦截了
                             mIsBeingDragged = false;
                             return false;
                         }
-                    }else {
+                    } else {
                         if (!mOnPullScrollListener.isOnTopEdge()
-                                && y > mInitialMotionY){
+                                && y > mInitialMotionY) {
                             mIsBeingDragged = false;
                             return false;
                         }
@@ -216,12 +216,22 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
                     diff = y - mInitialMotionY;
                     absDiff = Math.abs(diff);
 
-                    if (absDiff > mTouchSlop
-                            && (getNestedScrollAxes() & SCROLL_AXIS_VERTICAL) == 0) {
-                        if (isReadyForPullStart()) {
-                            mCurMotionY = y;
-                            mLastMotionX = x;
-                            mIsBeingDragged = true;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        if (absDiff > mTouchSlop
+                                && (getNestedScrollAxes() & SCROLL_AXIS_VERTICAL) == 0) {
+                            if (isReadyForPullStart()) {
+                                mCurMotionY = y;
+                                mLastMotionX = x;
+                                mIsBeingDragged = true;
+                            }
+                        }
+                    } else {
+                        if (absDiff > mTouchSlop) {
+                            if (isReadyForPullStart()) {
+                                mCurMotionY = y;
+                                mLastMotionX = x;
+                                mIsBeingDragged = true;
+                            }
                         }
                     }
                 }
@@ -254,8 +264,8 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_MOVE: {
-                Log.d(TAG, "onTouchEvent: ACTION_MOVE mIsBeingDragged = "+mIsBeingDragged);
-                Log.d(TAG, "onTouchEvent: ACTION_MOVE mCurMotionY = "+mCurMotionY);
+                Log.d(TAG, "onTouchEvent: ACTION_MOVE mIsBeingDragged = " + mIsBeingDragged);
+                Log.d(TAG, "onTouchEvent: ACTION_MOVE mCurMotionY = " + mCurMotionY);
                 if (mIsBeingDragged) {
                     mCurMotionY = event.getY();
                     mLastMotionX = event.getX();
@@ -273,7 +283,7 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
                     if (!mScroller.isFinished()) {
                         mScroller.abortAnimation();
                     }
-                    if (!mScrollRunnable.isFinish()){
+                    if (!mScrollRunnable.isFinish()) {
                         mScrollRunnable.abortScroller();
                     }
 
@@ -290,22 +300,22 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
                     final VelocityTracker velocityTracker = mVelocityTracker;
                     velocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
                     int initialVelocity = (int) velocityTracker.getYVelocity();
-                    Log.d(TAG, "onTouchEvent: [initialVelocity = "+Math.abs(initialVelocity)+"]");
-                    Log.d(TAG, "onTouchEvent: mMinimumVelocity = "+mMinimumVelocity);
+                    Log.d(TAG, "onTouchEvent: [initialVelocity = " + Math.abs(initialVelocity) + "]");
+                    Log.d(TAG, "onTouchEvent: mMinimumVelocity = " + mMinimumVelocity);
                     if ((Math.abs(initialVelocity) > mMinimumVelocity)
                             && getChildCount() > 0) {
 //                        if (initialVelocity > maxScrollEdge){//如果速度大于
 //                            initialVelocity = maxScrollEdge;
 //                        }
                         fling(-initialVelocity);
-                    }else {
+                    } else {
                         resetZoom();
                     }
                     releaseVelocityTracker();
 
                     if (onPullZoomListener != null) {
 //                        onPullZoomListener.onPullZooming(newScrollValue);
-                        onPullZoomListener.onPullZoomEnd(mActionDownY,mCurMotionY);
+                        onPullZoomListener.onPullZoomEnd(mActionDownY, mCurMotionY);
                     }
                     return true;
                 }
@@ -320,9 +330,9 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
         float diffY;
         diffY = mCurMotionY - mLastMotionY;
         mLastMotionY = mCurMotionY;
-        if (diffY > 0){//向下拉加阻力
+        if (diffY > 0) {//向下拉加阻力
             newScrollValue = Math.round(diffY / FRICTION);
-        }else {//向上无阻力
+        } else {//向上无阻力
             newScrollValue = Math.round(diffY / 1);
         }
         invalidateBarAlpha();
@@ -333,18 +343,19 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
 
     /**
      * 速度值
+     *
      * @param velocityY
      */
     public void fling(int velocityY) {
-        Log.d(TAG, "fling: velocityY = "+velocityY);
+        Log.d(TAG, "fling: velocityY = " + velocityY);
         int initialY = velocityY < 0 ? Integer.MAX_VALUE : 0;
-        int startY = velocityY<0 ? Integer.MAX_VALUE : 0;
+        int startY = velocityY < 0 ? Integer.MAX_VALUE : 0;
         if (getChildCount() > 0) {
-            Log.d(TAG, "fling: getScrollY() = "+getScrollY());
+            Log.d(TAG, "fling: getScrollY() = " + getScrollY());
             mScroller.fling(0, initialY, 0, velocityY,
                     0, Integer.MAX_VALUE, 0, Integer.MAX_VALUE);
             final boolean movingDown = velocityY > 0;
-            Log.d(TAG, "fling: mScroller.getDuration() = "+mScroller.getDuration());
+            Log.d(TAG, "fling: mScroller.getDuration() = " + mScroller.getDuration());
 
             mScrollRunnable.startScroll(mScroller, startY);
 
@@ -383,13 +394,13 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
 //        }
 //    }
 
-    private void resetZoom(){
+    private void resetZoom() {
         // If we're already refreshing, just scroll back to the top
-        Log.d(TAG, "onTouchEvent: isZoom = "+isZooming());
+        Log.d(TAG, "onTouchEvent: isZoom = " + isZooming());
         if (isZooming()) {
             smoothScrollToTop();
             if (onPullZoomListener != null) {
-                onPullZoomListener.onPullZoomEnd(0,0);//此时不判断刷新
+                onPullZoomListener.onPullZoomEnd(0, 0);//此时不判断刷新
             }
             isZooming = false;
 
@@ -398,6 +409,7 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
 
     /**
      * 初始化速度Tracker
+     *
      * @param event
      */
     private void obtainVelocityTracker(MotionEvent event) {
@@ -417,45 +429,46 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
         }
     }
 
-    public class ScrollRunnable implements Runnable{
+    public class ScrollRunnable implements Runnable {
         Scroller mScroller;
         int computY = 0;
         boolean isFinish;
-        public void abortScroller(){
+
+        public void abortScroller() {
             isFinish = true;
         }
 
-        public boolean isFinish(){
+        public boolean isFinish() {
             return isFinish;
         }
 
         @Override
         public void run() {
             if (!isFinish) {
-                Log.d(TAG, "computeZoonY: computeScrollOffset start time="+System.currentTimeMillis());
+                Log.d(TAG, "computeZoonY: computeScrollOffset start time=" + System.currentTimeMillis());
                 if (mScroller.computeScrollOffset()) {//如果动画没有完成
                     int scrollY;
                     int y = mScroller.getCurrY();
                     scrollY = computY - y;
-                    Log.d(TAG, "run: scrollY = "+scrollY+",[ computY="+computY+", y="+y+"]");
+                    Log.d(TAG, "run: scrollY = " + scrollY + ",[ computY=" + computY + ", y=" + y + "]");
                     computY = y;
-                    if ((mHeaderHeight>=mInitHeaderHeight && scrollY>0)
-                            || (mHeaderHeight<=actionBarHeight && scrollY<0)){//如果比action高度还小或者比总高度还大
+                    if ((mHeaderHeight >= mInitHeaderHeight && scrollY > 0)
+                            || (mHeaderHeight <= actionBarHeight && scrollY < 0)) {//如果比action高度还小或者比总高度还大
                         mScroller.forceFinished(true);
-                    }else {
-                        if (scrollY > 0){
-                            if (mHeaderHeight+scrollY >= mInitHeaderHeight){
-                                scrollY = mInitHeaderHeight - mHeaderHeight+100;
+                    } else {
+                        if (scrollY > 0) {
+                            if (mHeaderHeight + scrollY >= mInitHeaderHeight) {
+                                scrollY = mInitHeaderHeight - mHeaderHeight + 100;
                             }
                             pullHeaderToZoom(scrollY);
                         } else if (scrollY < 0) {
-                            if (mHeaderHeight+scrollY <= actionBarHeight){//如果小则变成actionbar大小
+                            if (mHeaderHeight + scrollY <= actionBarHeight) {//如果小则变成actionbar大小
                                 scrollY = actionBarHeight - mInitHeaderHeight;
                             }
                             pullHeaderToZoom(scrollY);
                         }
                     }
-                }else{
+                } else {
                     computY = 0;
                     resetZoom();
                     isFinish = true;
@@ -467,10 +480,11 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
 
         /**
          * 开始滑动
+         *
          * @param mScroller
          * @param startY    从什么位置开始滑动
          */
-        public void startScroll(Scroller mScroller, int startY){
+        public void startScroll(Scroller mScroller, int startY) {
             this.mScroller = mScroller;
             isFinish = false;
             computY = startY;
@@ -480,28 +494,30 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
 
     /**
      * 用于展示判断头部是否全部隐藏
+     *
      * @param mHeaderHeight
      */
-    public void setHeaderHeight(int mHeaderHeight){
+    public void setHeaderHeight(int mHeaderHeight) {
         this.mHeaderHeight = mHeaderHeight;
     }
 
     /**
      * 设置顶部anctionBar的布局
+     *
      * @param antionBar
      */
-    public void setActionBarView(View antionBar){
+    public void setActionBarView(View antionBar) {
         this.actionBarView = antionBar;
-        actionBarHeight = actionBarView.getLayoutParams().height>0?actionBarView.getLayoutParams().height:0;
+        actionBarHeight = actionBarView.getLayoutParams().height > 0 ? actionBarView.getLayoutParams().height : 0;
     }
 
     /**
      * 刷新ActionBar的透明度
      */
-    public void invalidateBarAlpha(){
-        if (actionBarView != null){
-            int alpha = 255 - (int) (((double)mHeaderHeight-actionBarHeight)/(mInitHeaderHeight-actionBarHeight) * 255);
-            if(alpha < 0){
+    public void invalidateBarAlpha() {
+        if (actionBarView != null) {
+            int alpha = 255 - (int) (((double) mHeaderHeight - actionBarHeight) / (mInitHeaderHeight - actionBarHeight) * 255);
+            if (alpha < 0) {
                 alpha = 0;
             }
             actionBarView.getBackground().setAlpha(alpha);
@@ -523,14 +539,14 @@ public abstract class PullToZoomBase<T extends View> extends LinearLayout implem
     public interface OnPullZoomListener {
         public void onPullZooming(int newScrollValue);
 
-        public void onPullZoomEnd(float mActionDownY,float mCurMotionY);
+        public void onPullZoomEnd(float mActionDownY, float mCurMotionY);
     }
 
-    public void setOnPullScrollListener(OnPullScrollListener pullScrollListener){
+    public void setOnPullScrollListener(OnPullScrollListener pullScrollListener) {
         this.mOnPullScrollListener = pullScrollListener;
     }
 
-    public interface OnPullScrollListener{
+    public interface OnPullScrollListener {
         public boolean isOnTopEdge();
     }
 }
